@@ -1,0 +1,128 @@
+---
+title: "Breastfeeding Advocacy Initiative"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("C:/Users/crish/OneDrive/Documents/GitHub/BAI")
+
+library(readr)
+BAI <- readstata13::read.dta13("BAI.dta")
+
+library(raster)
+world_spdf <- shapefile("C:/Users/crish/OneDrive/Documents/Columbia SIPA/2017 Spring/Data Visualization/Final Project/data/world_map/TM_WORLD_BORDERS_SIMPL-0.3.shp")
+
+# Merge the BAI data to Shape Files
+library(dplyr)
+mapBAI <- world_spdf@data %>% left_join(BAI, by = c(ISO3 = "iso3"))
+world_spdf@data <- mapBAI
+
+```
+
+## Improve breastfeeding outcome rates
+
+Breastfed children have at least six times greater chance of survival in the early months than non-breastfed children.  An exclusively breastfed child is 14 times less likely to die in the first six months than a non-breastfed child, and breastfeeding drastically reduces deaths from acute respiratory infection and diarrhoea, two major child killers (Lancet 2008).
+
+#### Select layer to see indicators on breastfeeding
+
+```{r, include=FALSE}
+library(leaflet)
+bins <- c(0, 25, 50, 75, 100)
+pal <- colorBin(c("#9B2242", "#E87722", "#FFC72C", "#66982a"), domain = world_spdf$bf_1hour, bins = bins)
+```
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center'}
+library(leaflet)
+leaflet(world_spdf) %>% 
+  addTiles()  %>% 
+  setView(lat=25, lng=2.8 , zoom=1.5) %>%
+
+    # Data Layers
+      # First Data Layer: 
+    addPolygons(group="Breastfed within one hour", data=world_spdf,
+                stroke = FALSE, fillOpacity = 1, smoothFactor = 0.5, 
+                fillColor = ~pal(bf_1hour),
+                highlight = highlightOptions(weight = 4, color = "#666", dashArray = "3",
+                                             fillOpacity = 0.6, bringToFront = TRUE),
+                popup = paste(world_spdf$NAME,"<br/>",
+                              world_spdf$bf_1hour, "% babies breastfed within one hour", "<br/>")) %>%
+    # Second Data Layer:
+    addPolygons(group="Breastfed for first 6 months", data=world_spdf,
+                stroke = FALSE, fillOpacity = 1, smoothFactor = 0.5, 
+                fillColor = ~pal(bf_6months),
+                highlight = highlightOptions(weight = 4, color = "#666", dashArray = "3",
+                                             fillOpacity = 0.6, bringToFront = TRUE),
+                popup = paste(world_spdf$NAME,"<br/>",
+                              world_spdf$bf_6months, "% babies breastfed for the first 6 months", "<br/>")) %>%
+  
+    # Third Data Layer:
+    addPolygons(group="Breastfed at 1 year", data=world_spdf,
+                stroke = FALSE, fillOpacity = 1, smoothFactor = 0.5, 
+                fillColor = ~pal(bf_1yr),
+                highlight = highlightOptions(weight = 4, color = "#666", dashArray = "3",
+                                             fillOpacity = 0.6, bringToFront = TRUE),
+                popup = paste(world_spdf$NAME,"<br/>",
+                              world_spdf$bf_1yr, "% children still breastfed at 1 year of age", "<br/>")) %>%
+
+      # Fourth Data Layer:
+    addPolygons(group="Breastfed at 2 years", data=world_spdf,
+                stroke = FALSE, fillOpacity = 1, smoothFactor = 0.5, 
+                fillColor = ~pal(bf_2yr),
+                highlight = highlightOptions(weight = 4, color = "#666", dashArray = "3",
+                                             fillOpacity = 0.6, bringToFront = TRUE),
+                popup = paste(world_spdf$NAME,"<br/>",
+                              world_spdf$bf_2yr, "% children still breastfed at 2 years of age", "<br/>")) %>%
+  
+  addLegend("bottomright", pal = pal, 
+              values = ~bf_1hour, title = "", opacity = 1) %>%
+  
+  addEasyButton(easyButton(
+    icon="fa-globe", title="Zoom to Entire World Map",
+    onClick=JS("function(btn, map){ map.setZoom(1.5); }"))) %>%
+
+  # Layers control
+    addLayersControl(
+    #baseGroups = c("OpenStreetMap"),
+    baseGroups = c("Breastfed within one hour", 
+                      "Breastfed for first 6 months", 
+                      "Breastfed at 1 year", 
+                      "Breastfed at 2 years"),
+    options = layersControlOptions(collapsed = FALSE) )
+```
+
+
+##Percentage of children benefiting from...
+
+```{r, include=FALSE}
+indicator <- c("Early Initiation of Breastfeeding", "Exclusive Breastfeeding at 6 months", 
+               "Breastfeeding at 12 months", "Breastfeeding at 24 months")
+value <- c(45, 43, 74, 46)
+world <- data.frame(indicator, value)
+names(world) <- c("Indicator", "% children")
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(plotly)
+plot_ly(world, x= ~indicator, y=~value, type = "bar", color=I("#679A9B"))  %>%
+    layout(title='', 
+           xaxis = list(title='', tickfont = list(size = 12, color = 'rgb(107, 107, 107)')), 
+           yaxis = list(title = '% of children', tickfont = list(size = 18, color = 'rgb(107, 107, 107)')),
+           annotations = list(x = indicator, y = value, text = value, 
+                              tickfont = list(size = 18, color = 'rgb(107, 107, 107)'),
+                              xanchor = 'center', yanchor = 'bottom', showarrow = FALSE),
+           legend = list(x = 0, y = 1, bgcolor = 'rgba(255, 255, 255, 0)', 
+                         bordercolor = 'rgba(255, 255, 255, 0)'),
+           barmode = 'group', bargap = 0.15, bargroupgap = 0.1)
+```
+
+
+##Implement the International Code of Marketing of Breast-milk Substitutes and subsequent relevant World Health Assembly resolutions
+
+The World Health Assembly adopted the International Code of Marketing of Breast-milk Substitutes in 1981 to protect and promote breastfeeding, through the provision of adequate information on appropriate infant feeding and the regulation of the marketing of breastmilk substitutes, bottles and teats. In subsequent years additional resolutions have further defined and strengthened the Code.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(plotly)
+plot_ly(BAI, x = ~code, color=~code ,type = "histogram")  %>%
+    layout(title='Legal Status of the Code', xaxis = list(title = ''), barmode = 'group')
+```
