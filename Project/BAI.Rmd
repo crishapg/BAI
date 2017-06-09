@@ -1,5 +1,5 @@
 ---
-title: "Breastfeeding Advocacy Initiative"
+title: "Practice"
 output: html_document
 ---
 
@@ -27,8 +27,8 @@ Breastfed children have at least six times greater chance of survival in the ear
 
 ```{r, include=FALSE}
 library(leaflet)
-bins <- c(0, 25, 50, 75, 100)
-pal <- colorBin(c("#9B2242", "#E87722", "#FFC72C", "#66982a"), domain = world_spdf$bf_1hour, bins = bins)
+bins <- c(100, 75, 50, 25, 0)
+pal <- colorBin(c("#C00000", "#FF6600", "#FFFF99", "#00B050"), domain = world_spdf$bf_1hour, bins = bins)
 ```
 
 
@@ -74,7 +74,7 @@ leaflet(world_spdf) %>%
                 popup = paste(world_spdf$NAME,"<br/>",
                               world_spdf$bf_2yr, "% children still breastfed at 2 years of age", "<br/>")) %>%
   
-  addLegend("bottomright", pal = pal, 
+  addLegend("bottomleft", pal = pal, 
               values = ~bf_1hour, title = "", opacity = 1) %>%
   
   addEasyButton(easyButton(
@@ -91,38 +91,19 @@ leaflet(world_spdf) %>%
     options = layersControlOptions(collapsed = FALSE) )
 ```
 
+#
+# Table 1. Breastfeeding Practice Indicators
 
-##Percentage of children benefiting from...
+```{r, echo=FALSE}
+#myvars <- c("region", "country", "bf_1hour", "bf_6months", "bf_1yr", "bf_2yr")
+#BAI_practice <- BAI[myvars]
 
-```{r, include=FALSE}
-indicator <- c("Early Initiation of Breastfeeding", "Exclusive Breastfeeding at 6 months", 
-               "Breastfeeding at 12 months", "Breastfeeding at 24 months")
-value <- c(45, 43, 74, 46)
-world <- data.frame(indicator, value)
-names(world) <- c("Indicator", "% children")
+BAI_practice <- subset(BAI, select=c(region, country, bf_1hour, bf_6months, bf_1yr, bf_2yr))
+
+library(DT)
+datatable(BAI_practice, 
+          colnames = c('Region', 'Country', '% breastfed  within an hour of birth', '% breastfed  exclusively for 6 months', '% breastfed at 1 year old', '% breastfed at 2 yrs old'), 
+          filter = 'top', options = list(pageLength = 20, autoWidth = TRUE),
+          caption = '')
 ```
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
-library(plotly)
-plot_ly(world, x= ~indicator, y=~value, type = "bar", color=I("#679A9B"))  %>%
-    layout(title='', 
-           xaxis = list(title='', tickfont = list(size = 12, color = 'rgb(107, 107, 107)')), 
-           yaxis = list(title = '% of children', tickfont = list(size = 18, color = 'rgb(107, 107, 107)')),
-           annotations = list(x = indicator, y = value, text = value, 
-                              tickfont = list(size = 18, color = 'rgb(107, 107, 107)'),
-                              xanchor = 'center', yanchor = 'bottom', showarrow = FALSE),
-           legend = list(x = 0, y = 1, bgcolor = 'rgba(255, 255, 255, 0)', 
-                         bordercolor = 'rgba(255, 255, 255, 0)'),
-           barmode = 'group', bargap = 0.15, bargroupgap = 0.1)
-```
-
-
-##Implement the International Code of Marketing of Breast-milk Substitutes and subsequent relevant World Health Assembly resolutions
-
-The World Health Assembly adopted the International Code of Marketing of Breast-milk Substitutes in 1981 to protect and promote breastfeeding, through the provision of adequate information on appropriate infant feeding and the regulation of the marketing of breastmilk substitutes, bottles and teats. In subsequent years additional resolutions have further defined and strengthened the Code.
-
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
-library(plotly)
-plot_ly(BAI, x = ~code, color=~code ,type = "histogram")  %>%
-    layout(title='Legal Status of the Code', xaxis = list(title = ''), barmode = 'group')
-```

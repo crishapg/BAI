@@ -1,0 +1,265 @@
+---
+title: "Enabling Environment"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("C:/Users/crish/OneDrive/Documents/GitHub/BAI")
+
+library(readr)
+BAI <- readstata13::read.dta13("data/BAI.dta")
+
+library(raster)
+world_spdf <- shapefile("data/world_map/TM_WORLD_BORDERS_SIMPL-0.3.shp")
+
+# Merge the BAI data to Shape Files
+library(dplyr)
+mapBAI <- world_spdf@data %>% left_join(BAI, by = c(ISO3 = "iso3"))
+world_spdf@data <- mapBAI
+```
+
+
+```{r, include=FALSE}
+library(leaflet)
+bins3 <- c(0, 1, 2, 5, 100) 
+pal4 <- colorBin(c("#C00000", "#FF6600", "#FFFF99", "#00B050"), domain = world_spdf$funding, bins = bins3)
+
+```
+
+### Increase funding for breastfeeding programmes
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center'}
+library(leaflet)
+leaflet(world_spdf, width = 900) %>% 
+  addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
+        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>')  %>% 
+  setView(lat=25, lng=2.8 , zoom=1.5) %>%
+
+    # Data Layers
+      # First Data Layer: 
+    addPolygons(group="Funding for breastfeeding programs", data=world_spdf,
+                color = "white", weight = 0.5, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 1, 
+                fillColor = ~pal4(funding),
+                highlight = highlightOptions(weight = 2, color = "", dashArray = "1",
+                                             fillOpacity = 0.6, bringToFront = TRUE),
+                popup = paste(world_spdf$NAME,"<br/>",
+                              "$", round(world_spdf$funding, 2), "<br/>")) %>%
+  
+  addLegend("bottomleft", 
+  colors =c("#00B050", "#FFFF99", "#FF6600", "#C00000"),
+  labels= c(">$5", "$2-5", "$1-2", "<$1"),
+  title= "",
+  opacity = 1)  %>%
+
+  addEasyButton(easyButton(
+    icon="fa-globe", title="Zoom to Entire World Map",
+    onClick=JS("function(btn, map){ map.setZoom(1.5); }")))
+
+```
+
+```{r, include=FALSE}
+library(leaflet)
+bins4 <- c(0, 1.5, 2.5, 3.5, 4.5) 
+pal5 <- colorBin(c("#C00000", "#FF6600", "#FFFF99", "#00B050"), domain = world_spdf$map_code, bins = bins4)
+
+```
+
+
+### Implement the International Code of Marketing of Breast-milk Substitutes and subsequent relevant World Health Assembly resolutions.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center'}
+library(leaflet)
+leaflet(world_spdf, width = 900) %>% 
+  addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
+        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>')  %>% 
+  setView(lat=25, lng=2.8 , zoom=1.5) %>%
+
+    # Data Layers
+      # First Data Layer: 
+    addPolygons(group="International Code", data=world_spdf,
+                color = "white", weight = 0.5, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 1, 
+                fillColor = ~pal5(map_code),
+                highlight = highlightOptions(weight = 2, color = "", dashArray = "1",
+                                             fillOpacity = 0.6, bringToFront = TRUE),
+                popup = paste(world_spdf$NAME,"<br/>",
+                              world_spdf$code, "<br/>")) %>%
+  
+  addLegend("bottomleft", 
+  colors =c("#00B050", "#FFFF99", "#FF6600", "#C00000"),
+  labels= c("Full provisions in law", "Many provisions in law",
+             "Few provisions in law", "No legal measures"),
+  title= "",
+  opacity = 1)  %>%
+
+  addEasyButton(easyButton(
+    icon="fa-globe", title="Zoom to Entire World Map",
+    onClick=JS("function(btn, map){ map.setZoom(1.5); }")))
+
+```
+```{r, include=FALSE}
+library(leaflet)
+bins4 <- c(0, 1.5, 2.5, 3.5, 4.5) 
+pal6 <- colorBin(c("#C00000", "#FF6600", "#FFFF99", "#00B050"), 
+                 domain = world_spdf$map_compliance, 
+                 bins = bins4)
+```
+
+
+### Adopt adequate maternity protection legislation in line with ILO Convention 183
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center'}
+library(leaflet)
+leaflet(world_spdf, width = 900, height=550) %>% 
+  addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
+        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>')  %>% 
+  setView(lat=25, lng=2.8 , zoom=1.5) %>%
+
+    # Data Layers
+      # First Data Layer: 
+    addPolygons(group="Compliance", data=world_spdf,
+                color = "white", weight = 0.5, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 1, 
+                fillColor = ~pal6(map_compliance),
+                highlight = highlightOptions(weight = 2, color = "", dashArray = "1",
+                                             fillOpacity = 0.6, bringToFront = TRUE),
+                popup = paste(world_spdf$NAME,"<br/>",
+                              world_spdf$compliance, "<br/>")) %>%
+  
+  addLegend("bottomleft", 
+  colors =c("#00B050", "#FFFF99", "#FF6600", "#C00000"),
+  labels= c("Meets ILO R191 standards", "Meets ILO C183 standards", 
+            "Duration of leave is at least 14 weeks but other criteria for C183 are not clearly met", 
+            "Duration of leave standard is not met"),
+  title= "",
+  opacity = 1)  %>%
+
+  addEasyButton(easyButton(
+    icon="fa-globe", title="Zoom to Entire World Map",
+    onClick=JS("function(btn, map){ map.setZoom(1.5); }")))
+
+```
+
+
+```{r, include=FALSE}
+library(leaflet)
+bins5 <- c(-2, 0, 20, 50, 100) 
+pal7 <- colorBin(c("#C00000", "#FF6600", "#FFFF99", "#00B050"), 
+                 domain = world_spdf$map_baby, 
+                 bins = bins5)
+
+```
+
+
+### Implement the Ten Steps to Successful Breastfeeding, with special focus on sick and vulnerable newborns
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center'}
+library(leaflet)
+leaflet(world_spdf, width = 900) %>% 
+  addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
+        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>')  %>% 
+  setView(lat=25, lng=2.8 , zoom=1.5) %>%
+
+    # Data Layers
+      # First Data Layer: 
+    addPolygons(group="Babyfriendly", data=world_spdf,
+                color = "white", weight = 0.5, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 1, 
+                fillColor = ~pal7(map_baby),
+                highlight = highlightOptions(weight = 2, color = "", dashArray = "1",
+                                             fillOpacity = 0.6, bringToFront = TRUE),
+                popup = paste(world_spdf$NAME,"<br/>",
+                              world_spdf$babyfriendly,"%", "<br/>")) %>%
+  
+  addLegend("bottomleft", 
+  colors =c("#00B050", "#FFFF99", "#FF6600", "#C00000"),
+  labels= c( ">50%", "20-50%", "1-20%", "None"),
+  title= "",
+  opacity = 1)  %>%
+
+  addEasyButton(easyButton(
+    icon="fa-globe", title="Zoom to Entire World Map",
+    onClick=JS("function(btn, map){ map.setZoom(1.5); }")))
+
+```
+
+
+```{r, include=FALSE}
+library(leaflet)
+bins6 <- c(100, 75, 50, 25, 0) 
+pal8 <- colorBin(c("#C00000", "#FF6600", "#FFFF99", "#00B050"), 
+                 domain = world_spdf$counselling, bins = bins6)
+
+pal9 <- colorBin(c("#C00000", "#FF6600", "#FFFF99", "#00B050"), 
+                 domain = world_spdf$community_prog, bins = bins6)
+
+```
+
+
+### Improve access to qualified lactation support and strengthen linkages between health care and communities
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center'}
+library(leaflet)
+leaflet(world_spdf, width = 900) %>% 
+  addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
+        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>')  %>% 
+  setView(lat=25, lng=2.8 , zoom=1.5) %>%
+
+    # Data Layers
+      # First Data Layer: 
+    addPolygons(group="Primary healthcare facilities providing IYCF counselling", data=world_spdf,
+                color = "white", weight = 0.5, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 1,
+                fillColor = ~pal8(counselling),
+                highlight = highlightOptions(weight = 2, color = "#666", dashArray = "1",
+                                             fillOpacity = 0.6, bringToFront = TRUE),
+                popup = paste(world_spdf$NAME,"<br/>",
+                              round(world_spdf$counselling), "%", "<br/>")) %>%
+    # Second Data Layer:
+    addPolygons(group="Districts implementing community-based nutrition, health or other programmes with IYCF counselling", data=world_spdf,
+                color = "white", weight = 0.5, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 1,
+                fillColor = ~pal9(community_prog),
+                highlight = highlightOptions(weight = 2, color = "#666", dashArray = "1",
+                                             fillOpacity = 0.6, bringToFront = TRUE),
+                popup = paste(world_spdf$NAME,"<br/>",
+                              round(world_spdf$community_prog), 
+                              "% babies breastfed for the first 6 months", "<br/>")) %>%
+  
+  addLegend("bottomleft", pal = pal8, 
+              values = ~counselling, title = "", opacity = 1) %>%
+  
+  addEasyButton(easyButton(
+    icon="fa-globe", title="Zoom to Entire World Map",
+    onClick=JS("function(btn, map){ map.setZoom(1.5); }"))) %>%
+
+  # Layers control
+    addLayersControl(
+    #baseGroups = c("OpenStreetMap"),
+    baseGroups = c("Primary healthcare facilities providing IYCF counselling", 
+                   "Districts implementing community-based nutrition <br/> 
+                   health or other programmes with IYCF counselling"),
+    options = layersControlOptions(collapsed = FALSE) )
+
+```
+
+```{r, include=FALSE}
+BAI$funding= round(BAI$funding,2)
+BAI$counselling= round(BAI$counselling,2)
+BAI$community_prog= round(BAI$community_prog,2)
+```
+
+
+###Table. Enabling environment indicators
+
+```{r, echo=FALSE}
+library(DT)
+datatable(subset(BAI, select=c(region, country, funding, code, 
+                               compliance, babyfriendly, counselling, community_prog)),
+          colnames = c('Region', 'Country', 
+                       'Donor Funding (USD) Per Live Birth', 
+                       'Legal Status of the Code', 
+                       'Compliance with C183 and R191', 
+                       '% Births in Baby Friendly Hospitals and Maternities', 
+                       '% Primary Healthcare Facilities with Individual IYCF Counselling', 
+                       '% Districts Implementing Community Programs'), 
+          filter = 'top', options = list(pageLength = 15, autoWidth = TRUE),
+          caption = (''))
+
+```
+

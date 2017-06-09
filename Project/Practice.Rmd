@@ -1,0 +1,125 @@
+---
+title: "Practice"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("C:/Users/crish/OneDrive/Documents/GitHub/BAI")
+
+library(readr)
+BAI <- readstata13::read.dta13("data/BAI.dta")
+
+library(raster)
+world_spdf <- shapefile("data/world_map/TM_WORLD_BORDERS_SIMPL-0.3.shp")
+
+# Merge the BAI data to Shape Files
+library(dplyr)
+mapBAI <- world_spdf@data %>% left_join(BAI, by = c(ISO3 = "iso3"))
+world_spdf@data <- mapBAI
+
+```
+
+## Improve breastfeeding outcome rates
+
+Breastfed children have at least six times greater chance of survival in the early months than non-breastfed children.  An exclusively breastfed child is 14 times less likely to die in the first six months than a non-breastfed child, and breastfeeding drastically reduces deaths from acute respiratory infection and diarrhoea, two major child killers (Lancet 2008).
+
+Select layer to see indicators on breastfeeding
+
+```{r, include=FALSE}
+library(leaflet)
+bins <- c(100, 75, 50, 25, 0)
+pal <- colorBin(c("#C00000", "#FF6600", "#FFFF99", "#00B050"), domain = world_spdf$bf_1hour, bins = bins)
+```
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center'}
+library(leaflet)
+leaflet(world_spdf, width = 900) %>% 
+  addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
+        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>')  %>% 
+  setView(lat=25, lng=2.8 , zoom=1.5) %>%
+
+    # Data Layers
+      # First Data Layer: 
+    addPolygons(group="Breastfed within one hour", data=world_spdf,
+                color = "gray", weight = 0.5, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 1,
+                fillColor = ~pal(bf_1hour),
+                highlight = highlightOptions(weight = 2, color = "#666", dashArray = "1",
+                                             fillOpacity = 0.6, bringToFront = TRUE),
+                popup = paste(world_spdf$NAME,"<br/>",
+                              round(world_spdf$bf_1hour), "% babies breastfed within one hour", "<br/>")) %>%
+    # Second Data Layer:
+    addPolygons(group="Breastfed for first 6 months", data=world_spdf,
+                color = "white", weight = 0.5, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 1,
+                fillColor = ~pal(bf_6months),
+                highlight = highlightOptions(weight = 2, color = "#666", dashArray = "1",
+                                             fillOpacity = 0.6, bringToFront = TRUE),
+                popup = paste(world_spdf$NAME,"<br/>",
+                              round(world_spdf$bf_6months), 
+                              "% babies breastfed for the first 6 months", "<br/>")) %>%
+  
+    # Third Data Layer:
+    addPolygons(group="Breastfed at 1 year", data=world_spdf,
+                color = "white", weight = 0.5, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 1,
+                fillColor = ~pal(bf_1yr),
+                highlight = highlightOptions(weight = 2, color = "#666", dashArray = "1",
+                                             fillOpacity = 0.6, bringToFront = TRUE),
+                popup = paste(world_spdf$NAME,"<br/>",
+                              round(world_spdf$bf_1yr), 
+                              "% children still breastfed at 1 year of age", "<br/>")) %>%
+
+      # Fourth Data Layer:
+    addPolygons(group="Breastfed at 2 years", data=world_spdf,
+                color = "white", weight = 0.5, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 1,
+                fillColor = ~pal(bf_2yr),
+                highlight = highlightOptions(weight = 2, color = "#666", dashArray = "1",
+                                             fillOpacity = 0.6, bringToFront = TRUE),
+                popup = paste(world_spdf$NAME,"<br/>",
+                              round(world_spdf$bf_2yr), "% children still breastfed at 2 years of age", "<br/>")) %>%
+  
+  addLegend("bottomleft", pal = pal, 
+              values = ~bf_1hour, title = "", opacity = 1) %>%
+  
+  addEasyButton(easyButton(
+    icon="fa-globe", title="Zoom to Entire World Map",
+    onClick=JS("function(btn, map){ map.setZoom(1.5); }"))) %>%
+
+  # Layers control
+    addLayersControl(
+    #baseGroups = c("OpenStreetMap"),
+    baseGroups = c("Breastfed within one hour", 
+                      "Breastfed for first 6 months", 
+                      "Breastfed at 1 year", 
+                      "Breastfed at 2 years"),
+    options = layersControlOptions(collapsed = FALSE) )
+```
+
+
+
+
+```{r, include=FALSE}
+library(readxl)
+regional <- read_excel("C:/Users/crish/OneDrive/Documents/GitHub/BAI/data/regional.xlsx")
+regional <- as.data.frame(regional)
+#x<-regional[regional$indicator, regional$bf_1hour]
+
+library(ggplot2)
+library(plotly) 
+plot_ly(regional, y = ~indicator, x=~bf_1hour, 
+                     color = ~region, type = "bar",
+                     text = ~paste(region))
+```
+
+
+
+# Table 1. Breastfeeding Practice Indicators
+
+```{r, echo=FALSE}
+
+library(DT)
+datatable(subset(BAI, select=c(region, country, bf_1hour, bf_6months, bf_1yr, bf_2yr)), 
+          colnames = c('Region', 'Country', '% breastfed  within an hour of birth', '% breastfed  exclusively for 6 months', '% breastfed at 1 year old', '% breastfed at 2 yrs old'), 
+          filter = 'top', options = list(pageLength = 10, autoWidth = TRUE),
+          caption = '')
+```
+

@@ -7,10 +7,30 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Breastfeeding Advovcacy Initiative
-### For the best start in life
+<img src="C:/Users/crish/OneDrive/Documents/GitHub/BAI/images/logo.png" width="40%" />
 
-(INTRO)
+## Breastfeeding Advovcacy Initiative
+
+
+<iframe width="625" height="371" src="https://www.youtube.com/embed/mfYrF8JCblw" frameborder="0" allowfullscreen></iframe>
+
+
+###BREASTFEEDING GIVES CHILDREN THE BEST START IN LIFE
+
+Breastmilk is nature's perfect food. It is universally available. Its benefits last a lifetime, for mother as well as child. Yet currently less than 40 per cent of children worldwide under six months of age are exclusively breastfed-that is, fed only breastmilk with no additional foods or liquids, including water. This figure has
+remained relatively unchanged for nearly two decades. Breastfeeding is of critical importance to achieving the Millennium Development Goals and future Post-2015 Sustainable Development Goals, and evidence for this continues to grow.
+
+- From the first hour of a baby's life through age two or later, breastfeeding protects against illness and death-whether the child is born in a high-income or low-income country, to a rich family or a poor one.
+- Breastmilk acts as the baby's first immunization. Immediate skin-to-skin contact and breastfeeding in the first hour of life significantly reduce newborn mortality.
+- Breastfeeding is essential for early childhood development. It supports healthy brain development, increased I.Q. scores and better school performance.
+- Breastfeeding benefits maternal health by improving birth spacing and reducing the risk of postpartum haemorrhage. Women who breastfeed have a decreased risk of breast and ovarian cancers and some cardiovascular diseases.
+- Breastfeeding decreases the risk of non-communicable diseases, including childhood asthma, obesity, diabetes and heart disease later in life.
+- Breastfeeding provides a natural, renewable food that needs no packaging, transportation, storage, or cooking, making it environmentally friendly.
+
+Despite this compelling scientific evidence, political commitment to and financial investment in breastfeeding are low. According to a study conducted by UNICEF, reasons for this include insufficient global leadership, low prioritization by policymakers and donors and aggressive marketing by breastmilk substitute companies. Women also face many barriers to breastfeeding in the workplace and beyond. 
+
+Rapid progress is possible however, and some countries have made dramatic progress to raise breastfeeding rates.
+
 
 
 

@@ -1,0 +1,93 @@
+---
+title: "Reporting"
+output: html_document
+---
+
+```{r, setup, include=FALSE}
+setwd("C:/Users/crish/OneDrive/Documents/GitHub/BAI")
+
+library(readr)
+BAI <- readstata13::read.dta13("data/BAI.dta")
+
+library(raster)
+world_spdf <- shapefile("data/world_map/TM_WORLD_BORDERS_SIMPL-0.3.shp")
+
+# Merge the BAI data to Shape Files
+library(dplyr)
+mapBAI <- world_spdf@data %>% left_join(BAI, by = c(ISO3 = "iso3"))
+world_spdf@data <- mapBAI
+```
+
+###Establish tracking systems to assess progress in achieving national breastfeeding targets
+
+#### Reporting indicators
+
+```{r, include=FALSE}
+library(leaflet)
+bins2 <- c(0, 1.5, 3) 
+pal2 <- colorBin(c("#C00000", "#00B050"), domain = world_spdf$map_wbti, bins = bins2)
+pal3 <- colorBin(c("#C00000", "#00B050"), domain = world_spdf$map_excbf, bins = bins2)
+```
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center'}
+library(leaflet)
+leaflet(world_spdf, width = 900) %>% 
+  addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
+        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>')  %>% 
+  setView(lat=25, lng=2.8 , zoom=1.5) %>%
+
+    # Data Layers
+      # First Data Layer: 
+    addPolygons(group="Most Recent WBTi Breastfeeding Program Assessment", data=world_spdf,
+                color = "white", weight = 0.5, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 1, 
+                fillColor = ~pal2(map_wbti),
+                highlight = highlightOptions(weight = 2, color = "", dashArray = "1",
+                                             fillOpacity = 0.6, bringToFront = TRUE),
+                popup = paste(world_spdf$NAME,"<br/>",
+                              world_spdf$wbti_assessment, "", "<br/>")) %>%
+  
+      # Second Data Layer:
+    addPolygons(group="Most Recent Exclusive BF report", data=world_spdf,
+                color = "white", weight = 0.5, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 1, 
+                fillColor = ~pal3(map_excbf),
+                highlight = highlightOptions(weight = 4, color = "", dashArray = "1",
+                                             fillOpacity = 0.6, bringToFront = TRUE),
+                popup = paste(world_spdf$NAME,"<br/>",
+                              world_spdf$excbf_report, "", "<br/>")) %>%
+
+  addLegend("bottomleft", 
+  colors =c("#C00000", "#00B050"),
+  labels= c("No data or before 2012", 
+            "2012-present"),
+  title= "",
+  opacity = 1)  %>%
+
+  addEasyButton(easyButton(
+    icon="fa-globe", title="Zoom to Entire World Map",
+    onClick=JS("function(btn, map){ map.setZoom(1.5); }"))) %>%
+
+  # Layers control
+    addLayersControl(
+    #baseGroups = c("OpenStreetMap"),
+    baseGroups = c("Most Recent WBTi Breastfeeding Program Assessment", 
+                   "Most Recent Exclusive BF report"),
+    options = layersControlOptions(collapsed = FALSE) )
+
+
+```
+
+###Table. Reporting indicators
+
+```{r, echo=FALSE}
+
+library(DT)
+datatable(subset(BAI, select=c(region, country, wbti_assessment, excbf_report)), 
+          colnames = c('Region', 'Country', 
+                       'Year of most Recent WBTi Breastfeeding Program Assessment/1', 
+                       'Year of most Recent Exclusive BF report/2'), 
+          filter = 'top', options = list(pageLength = 20, autoWidth = TRUE),
+          caption = ('Sources: 1/ WHO & UNICEF | 2/WBTi'))
+
+```
+
